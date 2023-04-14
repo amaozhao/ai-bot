@@ -12,5 +12,7 @@ class Base(_Base):
     __abstract__ = True
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     created: Mapped[datetime] = mapped_column(insert_default=func.now())
-    updated: Mapped[datetime] = mapped_column(onupdate=func.now())
+    updated: Mapped[datetime] = mapped_column(
+        onupdate=func.now(), insert_default=func.now()
+    )
     deleted: Mapped[bool] = mapped_column(default=False)

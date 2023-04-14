@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
-from ..schemas import JWTToken, SignIn
-from ..services import auth_service
 
+from ..schemas import JWTToken, SignIn, SignUp
+from ..services import auth_service, user_service
 
 router = APIRouter(
     prefix="/api/auth",
@@ -13,11 +13,27 @@ router = APIRouter(
 
 @router.post("/signin")
 async def signin(sigin_schema: SignIn):
-    authenticated = await auth_service.authenticate(sigin_schema.username, sigin_schema.password)
+    authenticated = await auth_service.authenticate(
+        sigin_schema.username, sigin_schema.password
+    )
     if authenticated:
-        return JWTToken(token="abc", token_type='Bearer')
+        access_token = auth_service.create_access_token(
+            data={"sub": authenticated.username}
+        )
+        return JWTToken(token=access_token, token_type="bearer")
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Incorrect username or password",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+
+@router.post("/signup")
+async def signup(signup_schema: SignUp):
+    user = await user_service.create(
+        username=signup_schema.username,
+        mobile=signup_schema.mobile,
+        password=signup_schema.password1,
+        email=signup_schema.email,
+    )
+    return {"status": "success"}
